@@ -1,0 +1,282 @@
+{
+  "entities": {
+    "EstablishmentSettings": {
+      "title": "EstablishmentSettings",
+      "description": "Public configuration, hours, contact info, social links, and legal data for Tremendo.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Business name"
+        },
+        "slogan": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Brand slogan"
+        },
+        "address": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Physical street address"
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "description": "Display phone number"
+        },
+        "whatsappNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30,
+          "pattern": "^[0-9]+$",
+          "description": "Digits-only WhatsApp phone number with country code"
+        },
+        "hoursWeekdays": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Monday to Thursday opening hours"
+        },
+        "hoursWeekend": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Friday to Sunday opening hours"
+        },
+        "instagramUrl": {
+          "type": "string",
+          "maxLength": 250,
+          "description": "Instagram profile URL"
+        },
+        "facebookUrl": {
+          "type": "string",
+          "maxLength": 250,
+          "description": "Facebook page URL"
+        },
+        "mapsUrl": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Google Maps URL"
+        },
+        "highlights": {
+          "type": "array",
+          "description": "Up to 10 establishment highlights (e.g., Partidos en vivo, Eventos)"
+        },
+        "legalOwnerName": {
+          "type": "string",
+          "maxLength": 150,
+          "description": "Legal owner or business entity name"
+        },
+        "legalCuit": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Argentine CUIT identifier"
+        },
+        "legalEmail": {
+          "type": "string",
+          "maxLength": 150,
+          "description": "Legal contact email"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": [
+        "name",
+        "slogan",
+        "address",
+        "phone",
+        "whatsappNumber",
+        "hoursWeekdays",
+        "hoursWeekend",
+        "instagramUrl",
+        "facebookUrl",
+        "mapsUrl",
+        "highlights",
+        "legalOwnerName",
+        "legalCuit",
+        "legalEmail",
+        "updatedAt"
+      ]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Menu category (e.g., Lomos, Pizzas, Empanadas).",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "slug": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "order": {
+          "type": "number"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["name", "slug", "order", "active", "updatedAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Digital menu product belonging to a category.",
+      "type": "object",
+      "properties": {
+        "categoryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "price": {
+          "type": "number"
+        },
+        "imageUrl": {
+          "type": "string",
+          "maxLength": 350000
+        },
+        "featured": {
+          "type": "boolean"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "categoryId",
+        "name",
+        "description",
+        "price",
+        "imageUrl",
+        "featured",
+        "active",
+        "order",
+        "updatedAt"
+      ]
+    },
+    "Promotion": {
+      "title": "Promotion",
+      "description": "Promotional offer displayed on the digital menu.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "priceLabel": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "validDays": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "imageUrl": {
+          "type": "string",
+          "maxLength": 350000
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "priceLabel",
+        "validDays",
+        "imageUrl",
+        "active",
+        "order",
+        "updatedAt"
+      ]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized administrator record isolated from public reads.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 150
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["email", "role", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/EstablishmentSettings" },
+      "description": "Singleton establishment configuration document at /settings/establishment."
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Menu categories managed by admins and read by visitors."
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Menu products linked to categories."
+    },
+    "/promotions/{promoId}": {
+      "schema": { "$ref": "#/entities/Promotion" },
+      "description": "Active and paused promotional offers."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminUser" },
+      "description": "Authorized admin identities for RBAC."
+    }
+  }
+}

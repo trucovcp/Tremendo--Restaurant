@@ -1,0 +1,200 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Reusable Hardened Helpers ---
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'pauletichleandro@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || (
+        isVerifiedUser() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // --- Validation Blueprints ---
+    function isValidSettings(data) {
+      return data.keys().hasAll([
+          'name', 'slogan', 'address', 'phone', 'whatsappNumber',
+          'hoursWeekdays', 'hoursWeekend', 'instagramUrl', 'facebookUrl',
+          'mapsUrl', 'highlights', 'legalOwnerName', 'legalCuit',
+          'legalEmail', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'name', 'slogan', 'address', 'phone', 'whatsappNumber',
+          'hoursWeekdays', 'hoursWeekend', 'instagramUrl', 'facebookUrl',
+          'mapsUrl', 'highlights', 'legalOwnerName', 'legalCuit',
+          'legalEmail', 'updatedAt'
+        ]) &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 80 &&
+        data.slogan is string && data.slogan.size() <= 120 &&
+        data.address is string && data.address.size() >= 1 && data.address.size() <= 200 &&
+        data.phone is string && data.phone.size() >= 1 && data.phone.size() <= 40 &&
+        data.whatsappNumber is string && data.whatsappNumber.size() >= 1 && data.whatsappNumber.size() <= 30 && data.whatsappNumber.matches('^[0-9]+$') &&
+        data.hoursWeekdays is string && data.hoursWeekdays.size() >= 1 && data.hoursWeekdays.size() <= 100 &&
+        data.hoursWeekend is string && data.hoursWeekend.size() >= 1 && data.hoursWeekend.size() <= 100 &&
+        data.instagramUrl is string && data.instagramUrl.size() <= 250 &&
+        data.facebookUrl is string && data.facebookUrl.size() <= 250 &&
+        data.mapsUrl is string && data.mapsUrl.size() <= 300 &&
+        data.highlights is list && data.highlights.size() <= 10 &&
+        (data.highlights.size() == 0 || (data.highlights[0] is string && data.highlights[0].size() <= 60)) &&
+        data.legalOwnerName is string && data.legalOwnerName.size() <= 150 &&
+        data.legalCuit is string && data.legalCuit.size() <= 40 &&
+        data.legalEmail is string && data.legalEmail.size() <= 150 &&
+        data.updatedAt is timestamp && data.updatedAt == request.time;
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['name', 'slug', 'order', 'active', 'updatedAt']) &&
+        data.keys().hasOnly(['name', 'slug', 'order', 'active', 'updatedAt']) &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 60 &&
+        data.slug is string && data.slug.size() >= 1 && data.slug.size() <= 60 && data.slug.matches('^[a-z0-9-]+$') &&
+        data.order is number && data.order >= 0 && data.order <= 1000 &&
+        data.active is bool &&
+        data.updatedAt is timestamp && data.updatedAt == request.time;
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll([
+          'categoryId', 'name', 'description', 'price', 'imageUrl',
+          'featured', 'active', 'order', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'categoryId', 'name', 'description', 'price', 'imageUrl',
+          'featured', 'active', 'order', 'updatedAt'
+        ]) &&
+        isValidId(data.categoryId) &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+        data.description is string && data.description.size() <= 400 &&
+        data.price is number && data.price >= 0 && data.price <= 10000000 &&
+        data.imageUrl is string && data.imageUrl.size() <= 350000 &&
+        data.featured is bool &&
+        data.active is bool &&
+        data.order is number && data.order >= 0 && data.order <= 10000 &&
+        data.updatedAt is timestamp && data.updatedAt == request.time;
+    }
+
+    function isValidPromotion(data) {
+      return data.keys().hasAll([
+          'title', 'description', 'priceLabel', 'validDays',
+          'imageUrl', 'active', 'order', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'title', 'description', 'priceLabel', 'validDays',
+          'imageUrl', 'active', 'order', 'updatedAt'
+        ]) &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
+        data.description is string && data.description.size() <= 400 &&
+        data.priceLabel is string && data.priceLabel.size() <= 60 &&
+        data.validDays is string && data.validDays.size() <= 100 &&
+        data.imageUrl is string && data.imageUrl.size() <= 350000 &&
+        data.active is bool &&
+        data.order is number && data.order >= 0 && data.order <= 1000 &&
+        data.updatedAt is timestamp && data.updatedAt == request.time;
+    }
+
+    function isValidAdmin(data) {
+      return data.keys().hasAll(['email', 'role', 'createdAt']) &&
+        data.keys().hasOnly(['email', 'role', 'createdAt']) &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 150 &&
+        data.role == 'admin' &&
+        data.createdAt is timestamp && data.createdAt == request.time;
+    }
+
+    // --- Collection Rules ---
+
+    // 1. Establishment Settings (/settings/establishment)
+    match /settings/{settingId} {
+      allow get: if isValidId(settingId) && settingId == 'establishment';
+      allow list: if false;
+      allow create: if isValidId(settingId) && settingId == 'establishment' &&
+        isValidSettings(incoming()) && isAdmin();
+      allow update: if isValidId(settingId) && settingId == 'establishment' &&
+        isValidSettings(incoming()) && isAdmin() &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'slogan', 'address', 'phone', 'whatsappNumber',
+          'hoursWeekdays', 'hoursWeekend', 'instagramUrl', 'facebookUrl',
+          'mapsUrl', 'highlights', 'legalOwnerName', 'legalCuit',
+          'legalEmail', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    // 2. Menu Categories
+    match /categories/{categoryId} {
+      allow get: if isValidId(categoryId) && (existing().active == true || isAdmin());
+      allow list: if existing().active == true || isBootstrappedAdmin();
+      allow create: if isValidId(categoryId) && isValidCategory(incoming()) && isAdmin();
+      allow update: if isValidId(categoryId) && isValidCategory(incoming()) && isAdmin() &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'slug', 'order', 'active', 'updatedAt']);
+      allow delete: if isValidId(categoryId) && isAdmin();
+    }
+
+    // 3. Menu Products
+    match /products/{productId} {
+      allow get: if isValidId(productId) && (existing().active == true || isAdmin());
+      allow list: if existing().active == true || isBootstrappedAdmin();
+      allow create: if isValidId(productId) && isValidProduct(incoming()) && isAdmin() &&
+        exists(/databases/$(database)/documents/categories/$(incoming().categoryId));
+      allow update: if isValidId(productId) && isValidProduct(incoming()) && isAdmin() &&
+        exists(/databases/$(database)/documents/categories/$(incoming().categoryId)) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'categoryId', 'name', 'description', 'price', 'imageUrl',
+          'featured', 'active', 'order', 'updatedAt'
+        ]);
+      allow delete: if isValidId(productId) && isAdmin();
+    }
+
+    // 4. Promotions
+    match /promotions/{promoId} {
+      allow get: if isValidId(promoId) && (existing().active == true || isAdmin());
+      allow list: if existing().active == true || isBootstrappedAdmin();
+      allow create: if isValidId(promoId) && isValidPromotion(incoming()) && isAdmin();
+      allow update: if isValidId(promoId) && isValidPromotion(incoming()) && isAdmin() &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'description', 'priceLabel', 'validDays',
+          'imageUrl', 'active', 'order', 'updatedAt'
+        ]);
+      allow delete: if isValidId(promoId) && isAdmin();
+    }
+
+    // 5. Admins (Strictly isolated PII)
+    match /admins/{adminId} {
+      allow get: if isValidId(adminId) && (isBootstrappedAdmin() || (isVerifiedUser() && request.auth.uid == adminId));
+      allow list: if isBootstrappedAdmin();
+      allow create: if isValidId(adminId) && isValidAdmin(incoming()) && isBootstrappedAdmin();
+      allow update: if isValidId(adminId) && isValidAdmin(incoming()) && isBootstrappedAdmin() &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['email', 'role']);
+      allow delete: if isValidId(adminId) && isBootstrappedAdmin();
+    }
+  }
+}

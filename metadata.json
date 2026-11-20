@@ -1,0 +1,6 @@
+{
+  "name": "Tremendo — Mucho más que un sandwich",
+  "description": "Menú digital oficial de Tremendo en Villa Carlos Paz, Córdoba. Lomos, pizzas, empanadas, sandwich de milanesa, hamburguesas, papas fritas, cervezas, partidos en vivo y eventos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

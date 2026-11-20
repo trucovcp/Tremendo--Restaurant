@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Oswald', sans-serif;
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+    background-color: #09090B;
+    color: #F8FAFC;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Amber splatter accent texture echoing Tremendo's official visual identity */
+.tremendo-splatter-bg {
+  background-image:
+    radial-gradient(circle at 8% 18%, rgba(245, 158, 11, 0.14) 0%, transparent 32%),
+    radial-gradient(circle at 92% 12%, rgba(234, 88, 12, 0.14) 0%, transparent 28%),
+    radial-gradient(circle at 85% 82%, rgba(245, 158, 11, 0.08) 0%, transparent 36%);
+}
+
+/* Subtle gold rule line matching Tremendo flyer dividers */
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(245, 158, 11, 0.7) 50%, transparent 100%);
+}
+
+/* Hide scrollbars cleanly for horizontal category strip while keeping scroll functional */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #09090b !important;
+  }
+}
